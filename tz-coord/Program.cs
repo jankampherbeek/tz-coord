@@ -1,3 +1,18 @@
-﻿// See https://aka.ms/new-console-template for more information
+/*
+ *  Enigma - Coordinates and Timezones.
+ *  A project that supports Enigma-AR.
+ *  Copyright (c) Jan Kampherbeek.
+ *  Enigma is open source.
+ *  Please check the file copyright.txt in the root of the source for further details.
+ */
 
-Console.WriteLine("Hello, World!");
+namespace TzCoordCSharp;
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Coordinates.HandleCoordinates();
+        TimeZones.HandleTimeZones();
+    }
+}
