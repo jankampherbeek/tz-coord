@@ -6,141 +6,488 @@
  *  Please check the file copyright.txt in the root of the source for further details.
  */
 
-namespace TzCoordCSharp;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using TzCoordCSharp;
 
-public static class TimeZones
-{
-    private const string TzOutputFile = "tz.txt";
-    private const string CitiesRegionsOutputFile = "." + "\\" + "results" + "\\" + "citiesregions.csv";
-    private const string CitiesOutputFile = "." + "\\" + "results" + "\\" + "cities.csv";
-    private const string RegionsOutputFile = "." + "\\" + "results" + "\\" + "regions.csv";
+namespace tz_coord;
 
-    public static void HandleTimeZones()
+    public static class TimeZones
     {
-        ProcessTzFiles("africa");
-        ProcessTzFiles("antarctica");
-        ProcessTzFiles("asia");
-        ProcessTzFiles("australasia");
-        ProcessTzFiles("backzone");
-        ProcessTzFiles("europe");
-        ProcessTzFiles("northamerica");
-        ProcessTzFiles("southamerica");
-    }
-
-    // TODO remove this function to timezones ?
-    private static void ProcessTzFiles(string inputFilename)
-    {
-        try
+        private const string Sep = ";"; // separator to be used in csv
+        
+        public static void HandleTimeZones()
         {
-            // Read input file
-            var lines = File.ReadAllLines(inputFilename);
-            var outputLines = new List<string>();
-
-            // Process each line
-            foreach (var line in lines)
+            try
             {
-                var trimmedLine = line.Trim();
-                
-                // Check if field is not commented out
-                if (string.IsNullOrEmpty(trimmedLine))
-                {
-                    continue;
-                }
-                
-                if (trimmedLine[0] == '#')
-                {
-                    continue;
-                }
-                
-                if (trimmedLine.Contains('#'))
-                {
-                    trimmedLine = trimmedLine.Split('#')[0];
-                }
-                
-                outputLines.Add(trimmedLine);
+                ReadInputFiles();
+                SplitTzAndDst();
+                FinalizeTz();
+                FinalizeDst();
             }
-
-            // Append to output file
-            File.AppendAllLines(TzOutputFile, outputLines);
-            Console.WriteLine("Processing completed successfully");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error processing timezone file {inputFilename}: {ex.Message}");
-        }
-    }
-
-    // Prompt: Read the content of cities.csv. Replace the name of the cities (2nd field in each line)
-    // with the name, a psave and the name of the region between braces. The region can be found in the
-    // file regions.csv (third item in each line). Select the correct region for each city by comparing
-    // the abbreviation for the country (first field in both cities.csv and regions.csv) and the code for
-    // the region (the fith field in cities.csv and the second field in regions.csv ). Write the updated
-    // results to a file 'CitiesRegions.csv'
-    public static void EnrichCityNames()
-    {
-        try
-        {
-            // Read regions.csv to build a map of region codes to region names
-            var regionsMap = new Dictionary<string, string>();
-
-            var regionsLines = File.ReadAllLines(RegionsOutputFile);
-            foreach (var line in regionsLines)
+            catch (Exception ex)
             {
-                var fields = line.Split(';');
-                if (fields.Length >= 2)
-                {
-                    // fields[0] is the region code, fields[1] is the region name
-                    regionsMap[fields[0]] = fields[1];
-                }
+                Console.WriteLine($"Error in HandleTimeZones: {ex.Message}");
             }
+        }
 
-            // Read cities.csv and process each line
-            var citiesLines = File.ReadAllLines(CitiesOutputFile);
-            var outputLines = new List<string>();
+   
 
-            foreach (var line in citiesLines)
+        private static void ReadInputFiles()
+        {
+            ProcessTzFiles(FilePaths.africaInputFile);
+            ProcessTzFiles(FilePaths.antarcticaInputFile);
+            ProcessTzFiles(FilePaths.asiaInputFile);
+            ProcessTzFiles(FilePaths.australasiaInputFile);
+            ProcessTzFiles(FilePaths.backzoneInputFile);
+            ProcessTzFiles(FilePaths.europeInputFile);
+            ProcessTzFiles(FilePaths.northamericaInputFile);
+            ProcessTzFiles(FilePaths.southamericaInputFile);
+        }
+
+        // splitTzAndDst read all lines from outputFile1 and writes tz lines to outputFile2Tz and
+        // dst lines to outputFile2Dst
+        private static void SplitTzAndDst()
+        {
+            try
             {
-                var fields = line.Split(';');
-                if (fields.Length >= 7)
+                using (var inputFile = new StreamReader(FilePaths.outputFile1))
+                using (var outputFileTz = new StreamWriter(FilePaths.outputFile2Tz, true))
+                using (var outputFileDst = new StreamWriter(FilePaths.outputFile2Dst, true))
                 {
-                    var countryCode = fields[0]; // country code
-                    var cityName = fields[1];    // city name
-                    // var latitude = fields[2];      // latitude
-                    // var longitude = fields[3];     // longitude
-                    var regionCode = fields[4]; // region code (5th field, 0-based index 4)
-                    // var elevation = fields[5];     // elevation
-                    // var timezone = fields[6];      // timezone
-
-                    // Create the region key by combining country code and region code
-                    var regionKey = countryCode + "." + regionCode;
-
-                    // Look up the region name
-                    if (regionsMap.TryGetValue(regionKey, out var regionName))
+                    string line;
+                    while ((line = inputFile.ReadLine()) != null)
                     {
-                        // Replace city name with "cityName [regionName]"
-                        var enrichedCityName = cityName + " (" + regionName + ")";
-                        fields[1] = enrichedCityName;
+                        line = line.Trim();
+                        // Check for empty lines
+                        if (string.IsNullOrEmpty(line))
+                        {
+                            continue;
+                        }
+                        if (line.StartsWith("Rule")) // DST line
+                        {
+                            outputFileDst.WriteLine(line);
+                        }
+                        else // TZ line
+                        {
+                            outputFileTz.WriteLine(line);
+                        }
                     }
-
-                    // Write the updated line
-                    var outputLine = string.Join(";", fields);
-                    outputLines.Add(outputLine);
                 }
             }
-
-            // Ensure directory exists
-            var outputDir = Path.GetDirectoryName(CitiesRegionsOutputFile);
-            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            catch (Exception ex)
             {
-                Directory.CreateDirectory(outputDir);
+                Console.WriteLine($"Error in SplitTzAndDst: {ex.Message}");
+                throw;
             }
-
-            File.WriteAllLines(CitiesRegionsOutputFile, outputLines);
-            Console.WriteLine("City names enrichment completed successfully");
         }
-        catch (Exception ex)
+
+        // finalizeTz writes time zone info in the final format to tzDataFile
+        private static void FinalizeTz()
         {
-            Console.WriteLine($"Error enriching city names: {ex.Message}");
+            try
+            {
+                using (var inputFile = new StreamReader(FilePaths.outputFile2Tz))
+                using (var outputFile = new StreamWriter(FilePaths.tzDataFile, true))
+                {
+                    string line;
+                    while ((line = inputFile.ReadLine()) != null)
+                    {
+                        line = line.Trim();
+                        if (string.IsNullOrEmpty(line))
+                        {
+                            continue;
+                        }
+                        string tzLine = CreateTzLine(line);
+                        outputFile.WriteLine(tzLine);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in FinalizeTz: {ex.Message}");
+                throw;
+            }
+        }
+
+        private static void FinalizeDst()
+        {
+            try
+            {
+                using (var inputFile = new StreamReader(FilePaths.outputFile2Dst))
+                using (var outputFile = new StreamWriter(FilePaths.dstDataFile, true))
+                {
+                    string line;
+                    while ((line = inputFile.ReadLine()) != null)
+                    {
+                        line = line.Trim();
+                        if (string.IsNullOrEmpty(line))
+                        {
+                            continue;
+                        }
+                        string dstLine = CreateDstLine(line);
+                        outputFile.WriteLine(dstLine);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in FinalizeDst: {ex.Message}");
+                throw;
+            }
+        }
+
+        private static void ProcessTzFiles(string inputFilename)
+        {
+            try
+            {
+                using (var inputFile = new StreamReader(inputFilename))
+                using (var outputFile = new StreamWriter(FilePaths.outputFile1, true))
+                {
+                    string line;
+                    while ((line = inputFile.ReadLine()) != null)
+                    {
+                        line = line.Trim();
+                        // Check for empty lines and comments
+                        if (string.IsNullOrEmpty(line))
+                        {
+                            continue;
+                        }
+                        if (line.StartsWith("#"))
+                        {
+                            continue;
+                        }
+                        if (line.StartsWith("Link"))
+                        {
+                            continue;
+                        }
+                        if (line.Contains("#"))
+                        {
+                            line = line.Split('#')[0];
+                        }
+                        outputFile.WriteLine(line);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error processing tz file {inputFilename}: {ex.Message}");
+                throw;
+            }
+        }
+
+        private static string CreateTzLine(string line)
+        {
+            string csvLine = "";
+            string strippedLine = line.Trim();
+            // line can have a mix of tabs, spaces and multiple spaces
+            strippedLine = strippedLine.Replace("\t", " ");
+            strippedLine = strippedLine.Replace("     ", " "); // assuming max 5 spaces
+            strippedLine = strippedLine.Replace("    ", " ");
+            strippedLine = strippedLine.Replace("   ", " ");
+            strippedLine = strippedLine.Replace("  ", " ");
+            string[] items = strippedLine.Split(' ');
+
+            if (items[0] == "Zone") // Top line for time zone
+            {
+                // process line with format: Zone	Africa/Algiers	0:12:12 -	LMT	1891 Mar 16
+                // into format : Zone;Africa/Algiers;0;12;12;-;LMT;1891;3;16
+
+                string h = "0", mi = "0", s = "0";
+                string[] topItems = items[2].Split(':');
+                if (topItems.Length > 0)
+                {
+                    h = topItems[0];
+                }
+                if (topItems.Length > 1)
+                {
+                    mi = topItems[1];
+                }
+                if (topItems.Length > 2)
+                {
+                    s = topItems[2];
+                }
+                string y = "0", mo = "1", d = "1";
+                if (items.Length > 5)
+                {
+                    y = items[5];
+                }
+                if (items.Length > 6)
+                {
+                    string moValue = MonthIdFromText(items[6]);
+                    mo = moValue;
+                }
+                if (items.Length > 7)
+                {
+                    d = items[7];
+                }
+                csvLine = items[0] + Sep + items[1] + Sep + h + Sep + mi + Sep + s + Sep + items[4] + Sep + y + Sep + mo + Sep + d;
+            }
+            else // definition line for time zone
+            {
+                // process lines with format: 0:09:21	-	PMT	1911 Mar 11
+                //                            0:00	Algeria	WE%sT	1940 Feb 25  2:00
+                // into:                      0;9;21;-;PMT;1911;3;11;0;0;0
+                //                            0;0;0;Algeria;WE%sT;1940;2;25;2;0;0
+                // alternative definition line
+                // 3:00 RussiaAsia	%z	1992 Sep lastSun  2:00s
+                // replace lastSun with last6
+
+                string h = "0", mi = "0", s = "0";
+                string[] topItems = items[0].Split(':');
+                if (topItems.Length > 0)
+                {
+                    h = topItems[0];
+                }
+                if (topItems.Length > 1)
+                {
+                    mi = topItems[1];
+                }
+                if (topItems.Length > 2)
+                {
+                    s = topItems[2];
+                }
+                string y = "0", mo = "1", d = "1";
+                if (items.Length > 3)
+                {
+                    y = items[3];
+                }
+                if (items.Length > 4)
+                {
+                    string moValue = MonthIdFromText(items[4]);
+                    mo = moValue;
+                }
+                // handle day
+                if (items.Length > 5)
+                {
+                    string dValue = ConstructDayOrRule(items[5]);
+                    d = dValue;
+                }
+                string oh = "0", omi = "0", os = "0";
+                if (items.Length > 6)
+                {
+                    string[] offsetItems = items[6].Split(':');
+                    if (offsetItems.Length > 0)
+                    {
+                        oh = offsetItems[0];
+                    }
+                    if (offsetItems.Length > 1)
+                    {
+                        omi = offsetItems[1];
+                    }
+                    if (offsetItems.Length > 2)
+                    {
+                        os = offsetItems[2];
+                    }
+                }
+
+                csvLine = h + Sep + mi + Sep + s + Sep + items[1] + Sep + items[2] + Sep + y + Sep + mo + Sep + d + Sep + oh + Sep + omi + Sep + os;
+            }
+            return csvLine;
+        }
+
+        private static string CreateDstLine(string line)
+        {
+            string csvLine = "";
+            string strippedLine = line.Trim();
+            // line can have a mix of tabs, spaces and multiple spaces
+            strippedLine = strippedLine.Replace("\t", " ");
+            strippedLine = strippedLine.Replace("     ", " "); // assuming max 5 spaces
+            strippedLine = strippedLine.Replace("    ", " ");
+            strippedLine = strippedLine.Replace("   ", " ");
+            strippedLine = strippedLine.Replace("  ", " ");
+            string[] items = strippedLine.Split(' ');
+
+            // process lines with format: Rule	Algeria	1916	only	-	Jun	14	23:00s	1:00	S
+            //                            Rule	Algeria	1916	1919	-	Oct	Sun>=1	23:00s	0	-
+            // into:                      Algeria;1916;only;6;14;23;0;0;1;0;0;S
+            //                            Algeria;1916;1919;10;6>=1;23;0;0;0;0;0;-
+
+            string h = "0", mi = "0", s = "0", mo = "0", dayOrRule = "0";
+            string oh = "0", omi = "0", os = "0";
+            string hTest = "0", mTest = "0", sTest = "0";
+            string useUt = "n";
+            string letterItem = "";
+            string toValue = items[3];
+            if (toValue == "only")
+            {
+                toValue = items[2];
+            }
+            if (items.Length > 5)
+            {
+                string moValue = MonthIdFromText(items[5]);
+                mo = moValue;
+            }
+            if (items.Length > 6)
+            {
+                string dorValue = items[6];
+                string d = ConstructDayOrRule(dorValue);
+                dayOrRule = d;
+            }
+            if (items.Length > 7)
+            {
+                int sPos = items[7].IndexOf('s');
+                string startTimeText = items[7];
+                if (sPos > 0)
+                {
+                    startTimeText = items[7].Substring(0, sPos);
+                }
+                string[] startTimeItems = startTimeText.Split(':');
+                if (startTimeItems.Length > 0)
+                {
+                    hTest = startTimeItems[0];
+                    if (hTest.Contains("u"))
+                    {
+                        useUt = "u";
+                    }
+                    h = hTest.Replace("u", "", (StringComparison)1);
+                }
+                if (startTimeItems.Length > 1)
+                {
+                    mTest = startTimeItems[1];
+                    if (mTest.Contains("u"))
+                    {
+                        useUt = "u";
+                    }
+                    mi = mTest.Replace("u", "", (StringComparison)1);
+                }
+                if (startTimeItems.Length > 2)
+                {
+                    sTest = startTimeItems[2];
+                    if (sTest.Contains("u"))
+                    {
+                        useUt = "u";
+                    }
+                    s = sTest.Replace("u", "", (StringComparison)1);
+                }
+            }
+            if (items.Length > 8)
+            {
+                string[] offsetItems = items[8].Split(':');
+                if (offsetItems.Length > 0)
+                {
+                    oh = offsetItems[0];
+                }
+                if (offsetItems.Length > 1)
+                {
+                    omi = offsetItems[1];
+                }
+                if (offsetItems.Length > 2)
+                {
+                    os = offsetItems[2];
+                }
+            }
+            if (items.Length > 9)
+            {
+                letterItem = items[9];
+            }
+            csvLine = items[1] + Sep + items[2] + Sep + toValue + Sep + mo + Sep + dayOrRule + Sep + h + Sep + mi + Sep + s + Sep + useUt + Sep + oh + Sep + omi + Sep + os + Sep + letterItem;
+
+            return csvLine;
+        }
+
+        private static string ConstructDayOrRule(string dorValue)
+        {
+            string dayOrRule = "error";
+            if (dorValue.Contains(">="))
+            {
+                int pos = dorValue.IndexOf(">=");
+                string dayTxt = dorValue.Substring(0, pos);
+                string indexTxt = dorValue.Substring(pos + 2, 1);
+                string dayNr = NrFromDayText(dayTxt.Trim());
+                dayOrRule = dayNr + ">=" + indexTxt;
+            }
+            else if (dorValue.Contains("<="))
+            {
+                int pos = dorValue.IndexOf("<=");
+                string dayTxt = dorValue.Substring(0, pos);
+                string indexTxt = dorValue.Substring(pos + 2, 1);
+                string dayNr = NrFromDayText(dayTxt.Trim());
+                dayOrRule = dayNr + "<=" + indexTxt;
+            }
+            else if (dorValue.Contains("last"))
+            {
+                string dayTxt = dorValue.Substring(4);
+                string dayNr = NrFromDayText(dayTxt.Trim());
+                dayOrRule = "last" + dayNr;
+            }
+            else
+            {
+                dayOrRule = dorValue;
+            }
+            return dayOrRule;
+        }
+
+        private static string NrFromDayText(string dayText)
+        {
+            switch (dayText)
+            {
+                case "Mon":
+                    return "0";
+                case "Tue":
+                    return "1";
+                case "Wed":
+                    return "2";
+                case "Thu":
+                    return "3";
+                case "Fri":
+                    return "4";
+                case "Sat":
+                    return "5";
+                case "Sun":
+                    return "6";
+                default:
+                    throw new ArgumentException("day text is invalid");
+            }
+        }
+
+        private static string MonthIdFromText(string month)
+        {
+            string monthId = "";
+            switch (month)
+            {
+                case "Jan":
+                    monthId = "1";
+                    break;
+                case "Feb":
+                    monthId = "2";
+                    break;
+                case "Mar":
+                    monthId = "3";
+                    break;
+                case "Apr":
+                    monthId = "4";
+                    break;
+                case "May":
+                    monthId = "5";
+                    break;
+                case "Jun":
+                    monthId = "6";
+                    break;
+                case "Jul":
+                    monthId = "7";
+                    break;
+                case "Aug":
+                    monthId = "8";
+                    break;
+                case "Sep":
+                    monthId = "9";
+                    break;
+                case "Oct":
+                    monthId = "10";
+                    break;
+                case "Nov":
+                    monthId = "11";
+                    break;
+                case "Dec":
+                    monthId = "12";
+                    break;
+                default:
+                    throw new ArgumentException("invalid month " + month);
+            }
+            return monthId;
         }
     }
-}

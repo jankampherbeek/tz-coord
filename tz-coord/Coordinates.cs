@@ -10,14 +10,14 @@ namespace TzCoordCSharp;
 
 public static class Coordinates
 {
-    private const string Sep = "\\";
-    private const string CitiesInputFile = "." + Sep + "coord" + Sep + "cities500.txt";
-    private const string CitiesOutputFile = "." + Sep + "results" + Sep + "cities.csv";
-    private const string CitiesRegionsOutputFile = "." + Sep + "results" + Sep + "citiesregions.csv";
-    private const string RegionsInputFile = "." + Sep + "coord" + Sep + "admin1CodesAscII.txt";
-    private const string RegionsOutputFile = "." + Sep + "results" + Sep + "regions.csv";
-    private const string CountryInputFile = "." + Sep + "coord" + Sep + "countryinfo.txt";
-    private const string CountryOutputFile = "." + Sep + "results" + Sep + "countries.csv";
+    // private const string Sep = "\\";
+    // private const string CitiesInputFile = "." + Sep + "coord" + Sep + "cities500.txt";
+    // private const string CitiesOutputFile = "." + Sep + "results" + Sep + "cities.csv";
+    // private const string CitiesRegionsOutputFile = "." + Sep + "results" + Sep + "citiesregions.csv";
+    // private const string RegionsInputFile = "." + Sep + "coord" + Sep + "admin1CodesAscII.txt";
+    // private const string RegionsOutputFile = "." + Sep + "results" + Sep + "regions.csv";
+    // private const string CountryInputFile = "." + Sep + "coord" + Sep + "countryinfo.txt";
+    // private const string CountryOutputFile = "." + Sep + "results" + Sep + "countries.csv";
 
     public static void HandleCoordinates()
     {
@@ -39,14 +39,14 @@ public static class Coordinates
             Console.WriteLine(error.Message);
         }
 
-        TimeZones.EnrichCityNames();
+        EnrichCityNames();
     }
 
     private static Exception? HandleCities()
     {
         try
         {
-            var lines = File.ReadAllLines(CitiesInputFile);
+            var lines = File.ReadAllLines(FilePaths.CitiesInputFile);
             var outputLines = new List<string>();
 
             foreach (var line in lines)
@@ -75,13 +75,13 @@ public static class Coordinates
             }
 
             // Ensure directory exists
-            var outputDir = Path.GetDirectoryName(CitiesOutputFile);
+            var outputDir = Path.GetDirectoryName(FilePaths.CitiesOutputFile);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            File.WriteAllLines(CitiesOutputFile, outputLines);
+            File.WriteAllLines(FilePaths.CitiesOutputFile, outputLines);
             Console.WriteLine("Processing completed successfully");
             return null;
         }
@@ -96,7 +96,7 @@ public static class Coordinates
     {
         try
         {
-            var lines = File.ReadAllLines(RegionsInputFile);
+            var lines = File.ReadAllLines(FilePaths.RegionsInputFile);
             var outputLines = new List<string>();
 
             foreach (var line in lines)
@@ -120,13 +120,13 @@ public static class Coordinates
             }
 
             // Ensure directory exists
-            var outputDir = Path.GetDirectoryName(RegionsOutputFile);
+            var outputDir = Path.GetDirectoryName(FilePaths.RegionsOutputFile);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            File.WriteAllLines(RegionsOutputFile, outputLines);
+            File.WriteAllLines(FilePaths.RegionsOutputFile, outputLines);
             Console.WriteLine("Processing completed successfully");
             return null;
         }
@@ -141,7 +141,7 @@ public static class Coordinates
     {
         try
         {
-            var lines = File.ReadAllLines(CountryInputFile);
+            var lines = File.ReadAllLines(FilePaths.CountryInputFile);
             var outputLines = new List<string>();
 
             foreach (var line in lines)
@@ -170,13 +170,13 @@ public static class Coordinates
             }
 
             // Ensure directory exists
-            var outputDir = Path.GetDirectoryName(CountryOutputFile);
+            var outputDir = Path.GetDirectoryName(FilePaths.CountryOutputFile);
             if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
             }
 
-            File.WriteAllLines(CountryOutputFile, outputLines);
+            File.WriteAllLines(FilePaths.CountryOutputFile, outputLines);
             Console.WriteLine("Processing completed successfully");
             return null;
         }
@@ -187,6 +187,79 @@ public static class Coordinates
         }
     }
 
+  // Prompt: Read the content of cities.csv. Replace the name of the cities (2nd field in each line)
+    // with the name, a psave and the name of the region between braces. The region can be found in the
+    // file regions.csv (third item in each line). Select the correct region for each city by comparing
+    // the abbreviation for the country (first field in both cities.csv and regions.csv) and the code for
+    // the region (the fith field in cities.csv and the second field in regions.csv ). Write the updated
+    // results to a file 'CitiesRegions.csv'
 
+    public static void EnrichCityNames()
+    {
+        try
+        {
+            // Read regions.csv to build a map of region codes to region names
+            var regionsMap = new Dictionary<string, string>();
+
+            var regionsLines = File.ReadAllLines(FilePaths.RegionsOutputFile);
+            foreach (var line in regionsLines)
+            {
+                var fields = line.Split(';');
+                if (fields.Length >= 2)
+                {
+                    // fields[0] is the region code, fields[1] is the region name
+                    regionsMap[fields[0]] = fields[1];
+                }
+            }
+
+            // Read cities.csv and process each line
+            var citiesLines = File.ReadAllLines(FilePaths.CitiesOutputFile);
+            var outputLines = new List<string>();
+
+            foreach (var line in citiesLines)
+            {
+                var fields = line.Split(';');
+                if (fields.Length >= 7)
+                {
+                    var countryCode = fields[0]; // country code
+                    var cityName = fields[1];    // city name
+                    // var latitude = fields[2];      // latitude
+                    // var longitude = fields[3];     // longitude
+                    var regionCode = fields[4]; // region code (5th field, 0-based index 4)
+                    // var elevation = fields[5];     // elevation
+                    // var timezone = fields[6];      // timezone
+
+                    // Create the region key by combining country code and region code
+                    var regionKey = countryCode + "." + regionCode;
+
+                    // Look up the region name
+                    if (regionsMap.TryGetValue(regionKey, out var regionName))
+                    {
+                        // Replace city name with "cityName [regionName]"
+                        var enrichedCityName = cityName + " (" + regionName + ")";
+                        fields[1] = enrichedCityName;
+                    }
+
+                    // Write the updated line
+                    var outputLine = string.Join(";", fields);
+                    outputLines.Add(outputLine);
+                }
+            }
+
+            // Ensure directory exists
+            var outputDir = Path.GetDirectoryName(FilePaths.CitiesRegionsOutputFile);
+            if (!string.IsNullOrEmpty(outputDir) && !Directory.Exists(outputDir))
+            {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            File.WriteAllLines(FilePaths.CitiesRegionsOutputFile, outputLines);
+            Console.WriteLine("City names enrichment completed successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error enriching city names: {ex.Message}");
+        }
+    }
 }
 

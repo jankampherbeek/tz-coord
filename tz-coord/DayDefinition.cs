@@ -5,7 +5,9 @@
  *  Please check the file copyright.txt in the root of the source for further details.
  */
 
-namespace TzCoordCSharp;
+using TzCoordCSharp;
+
+namespace tz_code;
 
 public static class DayDefinitionConstants
 {
@@ -17,7 +19,7 @@ public static class DayDefinitionConstants
 // DayDefHandler handles defining a date based on a definition.
 public interface IDayDefHandler
 {
-    (int day, Exception? error) DayFromDefinition(int year, int month, string def);
+    int DayFromDefinition(int year, int month, string def);
 }
 
 public class DayDefHandling : IDayDefHandler
@@ -35,7 +37,7 @@ public class DayDefHandling : IDayDefHandler
     }
 
     // DayFromDefinition calculates the day number for a given definition in a given year and month.
-    public (int day, Exception? error) DayFromDefinition(int year, int month, string def)
+    public int DayFromDefinition(int year, int month, string def)
     {
         string? defDay = null;
         string? defType = null;
@@ -44,9 +46,10 @@ public class DayDefHandling : IDayDefHandler
         {
             if (int.TryParse(def, out int preDefinedDay))
             {
-                return (preDefinedDay, null);
+                return (preDefinedDay);
             }
-            return (-1, new ArgumentException($"Could not parse day: {def}"));
+            throw new Exception($"Error: could not parse day: {def}");
+
         }
 
         if (def.Contains(DayDefinitionConstants.PfLast))
@@ -73,8 +76,7 @@ public class DayDefHandling : IDayDefHandler
 
         if (!int.TryParse(defDay, out int switchDay))
         {
-            Console.WriteLine($"Error: could not parse defDay: {def}");
-            return (-1, new ArgumentException($"Could not parse DefDay: {def}"));
+            throw new Exception($"Error: could not parse defDay: {def}");
         }
 
         double jd = _jdCalc.CalcJd(year, month, 1, 12.0); // jd for first day of month
@@ -118,11 +120,10 @@ public class DayDefHandling : IDayDefHandler
                 break;
 
             default:
-                Console.WriteLine($"Error: unknown def type: {def}");
-                return (-1, new ArgumentException($"Unknown def type: {def}"));
+                throw new Exception($"Error: unknown def type: {def}");
         }
 
-        return (actualDay, null);
+        return actualDay;
     }
 
     // contains is a helper function for dayFromdefinition()
