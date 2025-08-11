@@ -6,13 +6,6 @@
  *  Please check the file copyright.txt in the root of the source for further details.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using TzCoordCSharp;
-
 namespace tz_coord;
 
     public static class TimeZones
@@ -38,14 +31,14 @@ namespace tz_coord;
 
         private static void ReadInputFiles()
         {
-            ProcessTzFiles(FilePaths.africaInputFile);
-            ProcessTzFiles(FilePaths.antarcticaInputFile);
-            ProcessTzFiles(FilePaths.asiaInputFile);
-            ProcessTzFiles(FilePaths.australasiaInputFile);
-            ProcessTzFiles(FilePaths.backzoneInputFile);
-            ProcessTzFiles(FilePaths.europeInputFile);
-            ProcessTzFiles(FilePaths.northamericaInputFile);
-            ProcessTzFiles(FilePaths.southamericaInputFile);
+            ProcessTzFiles(FilePaths.AfricaInputFile);
+            ProcessTzFiles(FilePaths.AntarcticaInputFile);
+            ProcessTzFiles(FilePaths.AsiaInputFile);
+            ProcessTzFiles(FilePaths.AustralasiaInputFile);
+            ProcessTzFiles(FilePaths.BackzoneInputFile);
+            ProcessTzFiles(FilePaths.EuropeInputFile);
+            ProcessTzFiles(FilePaths.NorthamericaInputFile);
+            ProcessTzFiles(FilePaths.SouthamericaInputFile);
         }
 
         // splitTzAndDst read all lines from outputFile1 and writes tz lines to outputFile2Tz and
@@ -54,27 +47,24 @@ namespace tz_coord;
         {
             try
             {
-                using (var inputFile = new StreamReader(FilePaths.outputFile1))
-                using (var outputFileTz = new StreamWriter(FilePaths.outputFile2Tz, true))
-                using (var outputFileDst = new StreamWriter(FilePaths.outputFile2Dst, true))
+                using var inputFile = new StreamReader(FilePaths.OutputFile1);
+                using var outputFileTz = new StreamWriter(FilePaths.OutputFile2Tz, true);
+                using var outputFileDst = new StreamWriter(FilePaths.OutputFile2Dst, true);
+                while (inputFile.ReadLine() is { } line)
                 {
-                    string line;
-                    while ((line = inputFile.ReadLine()) != null)
+                    line = line.Trim();
+                    // Check for empty lines
+                    if (string.IsNullOrEmpty(line))
                     {
-                        line = line.Trim();
-                        // Check for empty lines
-                        if (string.IsNullOrEmpty(line))
-                        {
-                            continue;
-                        }
-                        if (line.StartsWith("Rule")) // DST line
-                        {
-                            outputFileDst.WriteLine(line);
-                        }
-                        else // TZ line
-                        {
-                            outputFileTz.WriteLine(line);
-                        }
+                        continue;
+                    }
+                    if (line.StartsWith("Rule")) // DST line
+                    {
+                        outputFileDst.WriteLine(line);
+                    }
+                    else // TZ line
+                    {
+                        outputFileTz.WriteLine(line);
                     }
                 }
             }
@@ -90,20 +80,17 @@ namespace tz_coord;
         {
             try
             {
-                using (var inputFile = new StreamReader(FilePaths.outputFile2Tz))
-                using (var outputFile = new StreamWriter(FilePaths.tzDataFile, true))
+                using var inputFile = new StreamReader(FilePaths.OutputFile2Tz);
+                using var outputFile = new StreamWriter(FilePaths.TzDataFile, true);
+                while (inputFile.ReadLine() is { } line)
                 {
-                    string line;
-                    while ((line = inputFile.ReadLine()) != null)
+                    line = line.Trim();
+                    if (string.IsNullOrEmpty(line))
                     {
-                        line = line.Trim();
-                        if (string.IsNullOrEmpty(line))
-                        {
-                            continue;
-                        }
-                        string tzLine = CreateTzLine(line);
-                        outputFile.WriteLine(tzLine);
+                        continue;
                     }
+                    var tzLine = CreateTzLine(line);
+                    outputFile.WriteLine(tzLine);
                 }
             }
             catch (Exception ex)
@@ -117,20 +104,17 @@ namespace tz_coord;
         {
             try
             {
-                using (var inputFile = new StreamReader(FilePaths.outputFile2Dst))
-                using (var outputFile = new StreamWriter(FilePaths.dstDataFile, true))
+                using var inputFile = new StreamReader(FilePaths.OutputFile2Dst);
+                using var outputFile = new StreamWriter(FilePaths.DstDataFile, true);
+                while (inputFile.ReadLine() is { } line)
                 {
-                    string line;
-                    while ((line = inputFile.ReadLine()) != null)
+                    line = line.Trim();
+                    if (string.IsNullOrEmpty(line))
                     {
-                        line = line.Trim();
-                        if (string.IsNullOrEmpty(line))
-                        {
-                            continue;
-                        }
-                        string dstLine = CreateDstLine(line);
-                        outputFile.WriteLine(dstLine);
+                        continue;
                     }
+                    var dstLine = CreateDstLine(line);
+                    outputFile.WriteLine(dstLine);
                 }
             }
             catch (Exception ex)
@@ -144,32 +128,29 @@ namespace tz_coord;
         {
             try
             {
-                using (var inputFile = new StreamReader(inputFilename))
-                using (var outputFile = new StreamWriter(FilePaths.outputFile1, true))
+                using var inputFile = new StreamReader(inputFilename);
+                using var outputFile = new StreamWriter(FilePaths.OutputFile1, true);
+                while (inputFile.ReadLine() is { } line)
                 {
-                    string line;
-                    while ((line = inputFile.ReadLine()) != null)
+                    line = line.Trim();
+                    // Check for empty lines and comments
+                    if (string.IsNullOrEmpty(line))
                     {
-                        line = line.Trim();
-                        // Check for empty lines and comments
-                        if (string.IsNullOrEmpty(line))
-                        {
-                            continue;
-                        }
-                        if (line.StartsWith("#"))
-                        {
-                            continue;
-                        }
-                        if (line.StartsWith("Link"))
-                        {
-                            continue;
-                        }
-                        if (line.Contains("#"))
-                        {
-                            line = line.Split('#')[0];
-                        }
-                        outputFile.WriteLine(line);
+                        continue;
                     }
+                    if (line.StartsWith('#'))
+                    {
+                        continue;
+                    }
+                    if (line.StartsWith("Link"))
+                    {
+                        continue;
+                    }
+                    if (line.Contains('#'))
+                    {
+                        line = line.Split('#')[0];
+                    }
+                    outputFile.WriteLine(line);
                 }
             }
             catch (Exception ex)
@@ -181,15 +162,15 @@ namespace tz_coord;
 
         private static string CreateTzLine(string line)
         {
-            string csvLine = "";
-            string strippedLine = line.Trim();
+            var csvLine = "";
+            var strippedLine = line.Trim();
             // line can have a mix of tabs, spaces and multiple spaces
             strippedLine = strippedLine.Replace("\t", " ");
             strippedLine = strippedLine.Replace("     ", " "); // assuming max 5 spaces
             strippedLine = strippedLine.Replace("    ", " ");
             strippedLine = strippedLine.Replace("   ", " ");
             strippedLine = strippedLine.Replace("  ", " ");
-            string[] items = strippedLine.Split(' ');
+            var items = strippedLine.Split(' ');
 
             if (items[0] == "Zone") // Top line for time zone
             {
@@ -197,7 +178,7 @@ namespace tz_coord;
                 // into format : Zone;Africa/Algiers;0;12;12;-;LMT;1891;3;16
 
                 string h = "0", mi = "0", s = "0";
-                string[] topItems = items[2].Split(':');
+                var topItems = items[2].Split(':');
                 if (topItems.Length > 0)
                 {
                     h = topItems[0];
@@ -217,7 +198,7 @@ namespace tz_coord;
                 }
                 if (items.Length > 6)
                 {
-                    string moValue = MonthIdFromText(items[6]);
+                    var moValue = MonthIdFromText(items[6]);
                     mo = moValue;
                 }
                 if (items.Length > 7)
@@ -237,7 +218,7 @@ namespace tz_coord;
                 // replace lastSun with last6
 
                 string h = "0", mi = "0", s = "0";
-                string[] topItems = items[0].Split(':');
+                var topItems = items[0].Split(':');
                 if (topItems.Length > 0)
                 {
                     h = topItems[0];
@@ -257,19 +238,19 @@ namespace tz_coord;
                 }
                 if (items.Length > 4)
                 {
-                    string moValue = MonthIdFromText(items[4]);
+                    var moValue = MonthIdFromText(items[4]);
                     mo = moValue;
                 }
                 // handle day
                 if (items.Length > 5)
                 {
-                    string dValue = ConstructDayOrRule(items[5]);
+                    var dValue = ConstructDayOrRule(items[5]);
                     d = dValue;
                 }
                 string oh = "0", omi = "0", os = "0";
                 if (items.Length > 6)
                 {
-                    string[] offsetItems = items[6].Split(':');
+                    var offsetItems = items[6].Split(':');
                     if (offsetItems.Length > 0)
                     {
                         oh = offsetItems[0];
@@ -291,15 +272,15 @@ namespace tz_coord;
 
         private static string CreateDstLine(string line)
         {
-            string csvLine = "";
-            string strippedLine = line.Trim();
+            var csvLine = "";
+            var strippedLine = line.Trim();
             // line can have a mix of tabs, spaces and multiple spaces
             strippedLine = strippedLine.Replace("\t", " ");
             strippedLine = strippedLine.Replace("     ", " "); // assuming max 5 spaces
             strippedLine = strippedLine.Replace("    ", " ");
             strippedLine = strippedLine.Replace("   ", " ");
             strippedLine = strippedLine.Replace("  ", " ");
-            string[] items = strippedLine.Split(' ');
+            var items = strippedLine.Split(' ');
 
             // process lines with format: Rule	Algeria	1916	only	-	Jun	14	23:00s	1:00	S
             //                            Rule	Algeria	1916	1919	-	Oct	Sun>=1	23:00s	0	-
@@ -309,33 +290,33 @@ namespace tz_coord;
             string h = "0", mi = "0", s = "0", mo = "0", dayOrRule = "0";
             string oh = "0", omi = "0", os = "0";
             string hTest = "0", mTest = "0", sTest = "0";
-            string useUt = "n";
-            string letterItem = "";
-            string toValue = items[3];
+            var useUt = "n";
+            var letterItem = "";
+            var toValue = items[3];
             if (toValue == "only")
             {
                 toValue = items[2];
             }
             if (items.Length > 5)
             {
-                string moValue = MonthIdFromText(items[5]);
+                var moValue = MonthIdFromText(items[5]);
                 mo = moValue;
             }
             if (items.Length > 6)
             {
-                string dorValue = items[6];
-                string d = ConstructDayOrRule(dorValue);
+                var dorValue = items[6];
+                var d = ConstructDayOrRule(dorValue);
                 dayOrRule = d;
             }
             if (items.Length > 7)
             {
-                int sPos = items[7].IndexOf('s');
-                string startTimeText = items[7];
+                var sPos = items[7].IndexOf('s');
+                var startTimeText = items[7];
                 if (sPos > 0)
                 {
                     startTimeText = items[7].Substring(0, sPos);
                 }
-                string[] startTimeItems = startTimeText.Split(':');
+                var startTimeItems = startTimeText.Split(':');
                 if (startTimeItems.Length > 0)
                 {
                     hTest = startTimeItems[0];
@@ -366,7 +347,7 @@ namespace tz_coord;
             }
             if (items.Length > 8)
             {
-                string[] offsetItems = items[8].Split(':');
+                var offsetItems = items[8].Split(':');
                 if (offsetItems.Length > 0)
                 {
                     oh = offsetItems[0];
@@ -391,27 +372,27 @@ namespace tz_coord;
 
         private static string ConstructDayOrRule(string dorValue)
         {
-            string dayOrRule = "error";
+            var dayOrRule = "error";
             if (dorValue.Contains(">="))
             {
-                int pos = dorValue.IndexOf(">=");
-                string dayTxt = dorValue.Substring(0, pos);
-                string indexTxt = dorValue.Substring(pos + 2, 1);
-                string dayNr = NrFromDayText(dayTxt.Trim());
+                var pos = dorValue.IndexOf(">=", StringComparison.Ordinal);
+                var dayTxt = dorValue.Substring(0, pos);
+                var indexTxt = dorValue.Substring(pos + 2, 1);
+                var dayNr = NrFromDayText(dayTxt.Trim());
                 dayOrRule = dayNr + ">=" + indexTxt;
             }
             else if (dorValue.Contains("<="))
             {
-                int pos = dorValue.IndexOf("<=");
-                string dayTxt = dorValue.Substring(0, pos);
-                string indexTxt = dorValue.Substring(pos + 2, 1);
-                string dayNr = NrFromDayText(dayTxt.Trim());
+                var pos = dorValue.IndexOf("<=", StringComparison.Ordinal);
+                var dayTxt = dorValue.Substring(0, pos);
+                var indexTxt = dorValue.Substring(pos + 2, 1);
+                var dayNr = NrFromDayText(dayTxt.Trim());
                 dayOrRule = dayNr + "<=" + indexTxt;
             }
             else if (dorValue.Contains("last"))
             {
-                string dayTxt = dorValue.Substring(4);
-                string dayNr = NrFromDayText(dayTxt.Trim());
+                var dayTxt = dorValue[4..];
+                var dayNr = NrFromDayText(dayTxt.Trim());
                 dayOrRule = "last" + dayNr;
             }
             else
@@ -446,7 +427,7 @@ namespace tz_coord;
 
         private static string MonthIdFromText(string month)
         {
-            string monthId = "";
+            var monthId = "";
             switch (month)
             {
                 case "Jan":

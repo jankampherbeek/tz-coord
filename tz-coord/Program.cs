@@ -6,9 +6,7 @@
  *  Please check the file copyright.txt in the root of the source for further details.
  */
 
-using tz_coord;
-
-namespace TzCoordCSharp;
+namespace tz_coord;
 
 class Program
 {
@@ -20,27 +18,27 @@ class Program
     }
 
 
-    public static void CleanExistingFiles()
+    private static void CleanExistingFiles()
     {
         try
         {
-            if (Directory.Exists(FilePaths.resultsFolder))
+            if (Directory.Exists(FilePaths.ResultsFolder))
             {
-                Directory.Delete(FilePaths.resultsFolder, true);
+                Directory.Delete(FilePaths.ResultsFolder, true);
             }
-            Directory.CreateDirectory(FilePaths.resultsFolder);
+            Directory.CreateDirectory(FilePaths.ResultsFolder);
 
-            if (File.Exists(FilePaths.outputFile1))
+            if (File.Exists(FilePaths.OutputFile1))
             {
-                File.Delete(FilePaths.outputFile1);
+                File.Delete(FilePaths.OutputFile1);
             }
-            if (File.Exists(FilePaths.outputFile2Tz))
+            if (File.Exists(FilePaths.OutputFile2Tz))
             {
-                File.Delete(FilePaths.outputFile2Tz);
+                File.Delete(FilePaths.OutputFile2Tz);
             }
-            if (File.Exists(FilePaths.outputFile2Dst))
+            if (File.Exists(FilePaths.OutputFile2Dst))
             {
-                File.Delete(FilePaths.outputFile2Dst);
+                File.Delete(FilePaths.OutputFile2Dst);
             }
         }
         catch (Exception ex)
