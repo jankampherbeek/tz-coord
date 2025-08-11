@@ -6,18 +6,12 @@
  *  Please check the file copyright.txt in the root of the source for further details.
  */
 
-namespace TzCoordCSharp;
+using TzCoordCSharp;
+
+namespace tz_coord;
 
 public static class Coordinates
 {
-    // private const string Sep = "\\";
-    // private const string CitiesInputFile = "." + Sep + "coord" + Sep + "cities500.txt";
-    // private const string CitiesOutputFile = "." + Sep + "results" + Sep + "cities.csv";
-    // private const string CitiesRegionsOutputFile = "." + Sep + "results" + Sep + "citiesregions.csv";
-    // private const string RegionsInputFile = "." + Sep + "coord" + Sep + "admin1CodesAscII.txt";
-    // private const string RegionsOutputFile = "." + Sep + "results" + Sep + "regions.csv";
-    // private const string CountryInputFile = "." + Sep + "coord" + Sep + "countryinfo.txt";
-    // private const string CountryOutputFile = "." + Sep + "results" + Sep + "countries.csv";
 
     public static void HandleCoordinates()
     {
@@ -188,13 +182,13 @@ public static class Coordinates
     }
 
   // Prompt: Read the content of cities.csv. Replace the name of the cities (2nd field in each line)
-    // with the name, a psave and the name of the region between braces. The region can be found in the
+    // with the name, and the name of the region between braces. The region can be found in the
     // file regions.csv (third item in each line). Select the correct region for each city by comparing
     // the abbreviation for the country (first field in both cities.csv and regions.csv) and the code for
     // the region (the fith field in cities.csv and the second field in regions.csv ). Write the updated
     // results to a file 'CitiesRegions.csv'
 
-    public static void EnrichCityNames()
+    private static void EnrichCityNames()
     {
         try
         {

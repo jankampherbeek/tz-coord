@@ -45,9 +45,9 @@ public static class PathSep
 public static class FilePaths
 {
     public const string CountriesFile = @"E:\tz-coord\tz-coord\data\countries.csv";
-    public const string CitiesFile = @"E:\tz-coord\tz-coord\data\cities.csv";
+    public const string CitiesFile = @"E:\tz-coord\tz-coord\data\citiesnoreg.csv";
     public const string RegionsFile = @"E:\tz-coord\tz-coord\data\regions.csv";
-    public const string CitiesRegionsOutputFile = @"E:\tz-coord\tz-coord\results\citiesregions.csv";
+    public const string CitiesRegionsOutputFile = @"E:\tz-coord\tz-coord\results\cities.csv";
     public const string CitiesOutputFile = @"E:\tz-coord\tz-coord\results\cities.csv";
     public const string RegionsOutputFile = @"E:\tz-coord\tz-coord\results\regions.csv";
     public const string CitiesInputFile = @"E:\tz-coord\tz-coord\coord\cities500.txt";
