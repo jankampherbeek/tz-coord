@@ -1,3 +1,10 @@
+/*
+ *  Enigma - Coordinates and Timezones.
+ *  A project that supports Enigma.
+ *  Copyright (c) 2025, Jan Kampherbeek.
+ *  Enigma is open source.
+ */
+
 namespace tz_coord;
 
 

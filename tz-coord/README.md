@@ -1,48 +1,24 @@
-# TzCoordCSharp
+# tz-coord
 
-This is a C# translation of the original Go `tzcoord` project. The project handles coordinates and timezone calculations for the Enigma Astrology Research system.
+Tz-ciird (timezones and coordinates) is a helper project for Enigma. 
+This project prepares timezone and coordinate files.
 
-## Project Structure
+The coordinate files are read from tsnames.org adn the tz files from the IANA tz database at iana.org
 
-- **Program.cs** - Main entry point (corresponds to `main.go`)
-- **Domain.cs** - Data structures for DateTime, Country, City (corresponds to `domain.go`)
-- **JdCalculator.cs** - Julian Day calculations (corresponds to `jdcalculator.go`)
-- **DayDefinition.cs** - Day definition calculations (corresponds to `daydefinition.go`)
-- **Conversion.cs** - Utility conversion functions (corresponds to `conversion.go`)
-- **Locations.cs** - Location handling for countries and cities (corresponds to `locations.go`)
-- **Coordinates.cs** - Coordinate processing functionality (corresponds to `coordinates.go`)
+Preparing the files has the following advantages:
 
-## Key Differences from Go Version
+- decreasing file size by omitting unnecessary details
+- improving performance by pre-calculating times from strings
+- increasing reliability by parsing and checking all lines
+- decreasing complexity of finding data in the files in the main project enigma-ar
+After a change in either the tnsnames data or the IANA tz data, it is sufficient to dowload the files and start enigma-tzcoord. The files and the application should be in the same directory.
 
-1. **Error Handling**: Uses C# tuples `(result, Exception? error)` instead of Go's multiple return values
-2. **Interfaces**: Uses C# interfaces with `I` prefix (e.g., `IDayDefHandler`)
-3. **File Operations**: Uses C# `File.ReadAllLines()` and `File.WriteAllLines()` instead of Go's buffered I/O
-4. **String Operations**: Uses C# string interpolation and LINQ methods
-5. **Collections**: Uses C# `List<T>` instead of Go slices
-
-## Building and Running
-
-```bash
-dotnet build
-dotnet run
-```
-
-## Dependencies
-
-- .NET 8.0
-- No external NuGet packages required
-
-## Data Files
-
-The project expects the following data files in the `coord` directory:
-- `cities500.txt` - City data
-- `admin1CodesAscII.txt` - Region data  
-- `countryinfo.txt` - Country data
-
-Output files will be created in the `results` directory.
+## Prerequisites
+tz-coord uses hardcoded filepaths which can be fouond in Domain.cs. 
+You will need to adapt these for you own project.
 
 ## License
 
-Same as the original Go project - Enigma is open source.
+Same as the original project - Enigma is open source.
 Copyright (c) Jan Kampherbeek.
 
