@@ -11,7 +11,8 @@ Preparing the files has the following advantages:
 - improving performance by pre-calculating times from strings
 - increasing reliability by parsing and checking all lines
 - decreasing complexity of finding data in the files in the main project enigma-ar
-After a change in either the tnsnames data or the IANA tz data, it is sufficient to dowload the files and start enigma-tzcoord. The files and the application should be in the same directory.
+After a change in either the tnsnames data or the IANA tz data, it is sufficient to dowload the files and start enigma-tzcoord.
+Put the tnsnames in the folder coord and the tz in the folder tz.
 
 ## Prerequisites
 tz-coord uses hardcoded filepaths which can be fouond in Domain.cs. 

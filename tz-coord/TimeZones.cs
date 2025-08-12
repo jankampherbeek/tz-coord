@@ -376,7 +376,7 @@ namespace tz_coord;
             {
                 var pos = dorValue.IndexOf(">=", StringComparison.Ordinal);
                 var dayTxt = dorValue.Substring(0, pos);
-                var indexTxt = dorValue.Substring(pos + 2, 1);
+                var indexTxt = dorValue.Substring(pos + 2);
                 var dayNr = NrFromDayText(dayTxt.Trim());
                 dayOrRule = dayNr + ">=" + indexTxt;
             }
@@ -384,7 +384,7 @@ namespace tz_coord;
             {
                 var pos = dorValue.IndexOf("<=", StringComparison.Ordinal);
                 var dayTxt = dorValue.Substring(0, pos);
-                var indexTxt = dorValue.Substring(pos + 2, 1);
+                var indexTxt = dorValue.Substring(pos + 2);
                 var dayNr = NrFromDayText(dayTxt.Trim());
                 dayOrRule = dayNr + "<=" + indexTxt;
             }
