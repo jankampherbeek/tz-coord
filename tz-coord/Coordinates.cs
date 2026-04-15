@@ -1,7 +1,7 @@
 /*
  *  Enigma - Coordinates and Timezones.
  *  A project that supports Enigma.
- *  Copyright (c) 2025, Jan Kampherbeek.
+ *  Copyright (c) 2026, Jan Kampherbeek.
  *  Enigma is open source.
  */
 
@@ -35,6 +35,14 @@ public static class Coordinates
 
     private static Exception? HandleCities()
     {
+        const int IDX_COUNTRY = 8;
+        const int IDX_NAME    = 2;
+        const int IDX_LAT     = 4;
+        const int IDX_LON     = 5;
+        const int IDX_ADMIN1  = 10;
+        const int IDX_ELEV    = 15; // elevation (may be empty)
+        const int IDX_TZ      = 17;
+        
         try
         {
             var lines = File.ReadAllLines(FilePaths.CitiesInputFile);
@@ -42,23 +50,26 @@ public static class Coordinates
 
             foreach (var line in lines)
             {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                
                 var fields = line.Split('\t');
-                if (fields.Length < 9)
+                
+                if (fields.Length < 18)
                 {
-                    Console.WriteLine("Warning: line has less than 9 fields, skipping");
+                    Console.WriteLine($"Warning: line has {fields.Length} fields, skipping");
                     continue;
                 }
                 
                 // Select required fields (0-based index)
                 var selectedFields = new[]
                 {
-                    fields[8],  // country
-                    fields[1],  // name location
-                    fields[4],  // latitude
-                    fields[5],  // longitude
-                    fields[10], // admin2 ; province or state
-                    fields[16], // elevation in meters
-                    fields[17], // indication for timezone
+                    fields[IDX_COUNTRY],// country
+                    fields[IDX_NAME],   // name location
+                    fields[IDX_LAT],    // latitude
+                    fields[IDX_LON],    // longitude
+                    fields[IDX_ADMIN1], // admin1 ; province or state
+                    fields[IDX_ELEV],   // elevation in meters
+                    fields[IDX_TZ],     // indication for timezone
                 };
                 
                 var outputLine = string.Join(";", selectedFields);
@@ -73,8 +84,8 @@ public static class Coordinates
             }
 
             File.WriteAllLines(FilePaths.CitiesOutputFile, outputLines);
-            Console.WriteLine("Processing completed successfully");
-            return null;
+            Console.WriteLine("Processing cities completed successfully");
+             return null;
         }
         catch (Exception ex)
         {
@@ -143,7 +154,7 @@ public static class Coordinates
                 }
                 
                 var fields = line.Split('\t');
-                if (fields.Length < 4)
+                if (fields.Length < 9)
                 {
                     continue;
                 }
@@ -206,29 +217,29 @@ public static class Coordinates
             // Read cities.csv and process each line
             var citiesLines = File.ReadAllLines(FilePaths.CitiesOutputFile);
             var outputLines = new List<string>();
-
+            
             foreach (var line in citiesLines)
             {
                 var fields = line.Split(';');
+                
                 if (fields.Length >= 7)
                 {
                     var countryCode = fields[0]; // country code
                     var cityName = fields[1];    // city name
                     // var latitude = fields[2];      // latitude
                     // var longitude = fields[3];     // longitude
-                    var regionCode = fields[4]; // region code (5th field, 0-based index 4)
+                    var regionCode = fields[4];    // region code
                     // var elevation = fields[5];     // elevation
                     // var timezone = fields[6];      // timezone
 
                     // Create the region key by combining country code and region code
-                    var regionKey = countryCode + "." + regionCode;
+                    var regionKey = $"{countryCode}.{regionCode}";
 
                     // Look up the region name
                     if (regionsMap.TryGetValue(regionKey, out var regionName))
                     {
                         // Replace city name with "cityName [regionName]"
-                        var enrichedCityName = cityName + " (" + regionName + ")";
-                        fields[1] = enrichedCityName;
+                        fields[1] = $"{cityName} ({regionName})";
                     }
 
                     // Write the updated line
@@ -245,7 +256,7 @@ public static class Coordinates
             }
 
             File.WriteAllLines(FilePaths.CitiesRegionsOutputFile, outputLines);
-            Console.WriteLine("City names enrichment completed successfully");
+            Console.WriteLine("City names enrichment completed successfully"); 
         }
         catch (Exception ex)
         {

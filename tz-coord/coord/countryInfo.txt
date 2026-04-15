@@ -54,7 +54,7 @@ AF	AFG	004	AF	Afghanistan	Kabul	647500	37172386	AS	.af	AFN	Afghani	93			fa-AF,ps
 AG	ATG	028	AC	Antigua and Barbuda	St. John's	443	96286	NA	.ag	XCD	Dollar	+1-268			en-AG	3576396		
 AI	AIA	660	AV	Anguilla	The Valley	102	13254	NA	.ai	XCD	Dollar	+1-264	AI-####	^(?:AZ)*(\d{4})$	en-AI	3573511		
 AL	ALB	008	AL	Albania	Tirana	28748	2866376	EU	.al	ALL	Lek	355	####	^(\d{4})$	sq,el	783754	MK,GR,ME,RS,XK	
-AM	ARM	051	AM	Armenia	Yerevan	29800	2991200	AS	.am	AMD	Dram	374	######	^(\d{6})$	hy	174982	GE,IR,AZ,TR	
+AM	ARM	051	AM	Armenia	Yerevan	29800	3084400	AS	.am	AMD	Dram	374	######	^(\d{6})$	hy	174982	GE,IR,AZ,TR	
 AO	AGO	024	AO	Angola	Luanda	1246700	30809762	AF	.ao	AOA	Kwanza	244			pt-AO	3351879	CD,NA,ZM,CG	
 AQ	ATA	010	AY	Antarctica		14000000	0	AN	.aq							6697173		
 AR	ARG	032	AR	Argentina	Buenos Aires	2766890	44494502	SA	.ar	ARS	Peso	54	@####@@@	^[A-Z]?\d{4}[A-Z]{0,3}$	es-AR,en,it,de,fr,gn	3865483	CL,BO,UY,PY,BR	
@@ -63,7 +63,7 @@ AT	AUT	040	AU	Austria	Vienna	83858	8847037	EU	.at	EUR	Euro	43	####	^(\d{4})$	de-
 AU	AUS	036	AS	Australia	Canberra	7686850	24992369	OC	.au	AUD	Dollar	61	####	^(\d{4})$	en-AU	2077456		
 AW	ABW	533	AA	Aruba	Oranjestad	193	105845	NA	.aw	AWG	Guilder	297			nl-AW,pap,es,en	3577279		
 AX	ALA	248		Aland Islands	Mariehamn	1580	26711	EU	.ax	EUR	Euro	+358-18	#####	^(?:FI)*(\d{5})$	sv-AX	661882		FI
-AZ	AZE	031	AJ	Azerbaijan	Baku	86600	9942334	AS	.az	AZN	Manat	994	AZ ####	^(?:AZ )*(\d{4})$	az,ru,hy	587116	GE,IR,AM,TR,RU	
+AZ	AZE	031	AJ	Azerbaijan	Baku	86600	10224900	AS	.az	AZN	Manat	994	AZ ####	^(?:AZ )*(\d{4})$	az,ru,hy	587116	GE,IR,AM,TR,RU	
 BA	BIH	070	BK	Bosnia and Herzegovina	Sarajevo	51129	3323929	EU	.ba	BAM	Marka	387	#####	^(\d{5})$	bs,hr-BA,sr-BA	3277605	HR,ME,RS	
 BB	BRB	052	BB	Barbados	Bridgetown	431	286641	NA	.bb	BBD	Dollar	+1-246	BB#####	^(?:BB)*(\d{5})$	en-BB	3374084		
 BD	BGD	050	BG	Bangladesh	Dhaka	144000	161356039	AS	.bd	BDT	Taka	880	####	^(\d{4})$	bn-BD,en	1210997	MM,IN	
@@ -100,7 +100,7 @@ CO	COL	170	CO	Colombia	Bogota	1138910	49648685	SA	.co	COP	Peso	57	######	^(\d{6}
 CR	CRI	188	CS	Costa Rica	San Jose	51100	4999441	NA	.cr	CRC	Colon	506	#####	^(\d{5})$	es-CR,en	3624060	PA,NI	
 CU	CUB	192	CU	Cuba	Havana	110860	11338138	NA	.cu	CUP	Peso	53	CP #####	^(?:CP)*(\d{5})$	es-CU,pap	3562981	US	
 CV	CPV	132	CV	Cabo Verde	Praia	4033	543767	AF	.cv	CVE	Escudo	238	####	^(\d{4})$	pt-CV	3374766		
-CW	CUW	531	UC	Curacao	 Willemstad	444	159849	NA	.cw	ANG	Guilder	599			nl,pap	7626836		
+CW	CUW	531	UC	Curacao	 Willemstad	444	159849	NA	.cw	XCG	Guilder	599			nl,pap	7626836		
 CX	CXR	162	KT	Christmas Island	Flying Fish Cove	135	1500	OC	.cx	AUD	Dollar	61	####	^(\d{4})$	en,zh,ms-CX	2078138		
 CY	CYP	196	CY	Cyprus	Nicosia	9250	1189265	EU	.cy	EUR	Euro	357	####	^(\d{4})$	el-CY,tr-CY,en	146669		
 CZ	CZE	203	EZ	Czechia	Prague	78866	10625695	EU	.cz	CZK	Koruna	420	### ##	^\d{3}\s?\d{2}$	cs,sk	3077311	PL,DE,SK,AT	
@@ -126,7 +126,7 @@ FR	FRA	250	FR	France	Paris	547030	66987244	EU	.fr	EUR	Euro	33	#####	^(\d{5})$	fr
 GA	GAB	266	GB	Gabon	Libreville	267667	2119275	AF	.ga	XAF	Franc	241			fr-GA	2400553	CM,GQ,CG	
 GB	GBR	826	UK	United Kingdom	London	244820	66488991	EU	.uk	GBP	Pound	44	@# #@@|@## #@@|@@# #@@|@@## #@@|@#@ #@@|@@#@ #@@|GIR0AA	^([Gg][Ii][Rr]\s?0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z]))))\s?[0-9][A-Za-z]{2})$	en-GB,cy-GB,gd	2635167	IE	
 GD	GRD	308	GJ	Grenada	St. George's	344	111454	NA	.gd	XCD	Dollar	+1-473			en-GD	3580239		
-GE	GEO	268	GG	Georgia	Tbilisi	69700	3731000	AS	.ge	GEL	Lari	995	####	^(\d{4})$	ka,ru,hy,az	614540	AM,AZ,TR,RU	
+GE	GEO	268	GG	Georgia	Tbilisi	69700	3704500	AS	.ge	GEL	Lari	995	####	^(\d{4})$	ka,ru,hy,az	614540	AM,AZ,TR,RU	
 GF	GUF	254	FG	French Guiana	Cayenne	91000	195506	SA	.gf	EUR	Euro	594	#####	^((97|98)3\d{2})$	fr-GF	3381670	SR,BR	
 GG	GGY	831	GK	Guernsey	St Peter Port	78	65228	EU	.gg	GBP	Pound	+44-1481	@# #@@|@## #@@|@@# #@@|@@## #@@|@#@ #@@|@@#@ #@@|GIR0AA	^((?:(?:[A-PR-UWYZ][A-HK-Y]\d[ABEHMNPRV-Y0-9]|[A-PR-UWYZ]\d[A-HJKPS-UW0-9])\s\d[ABD-HJLNP-UW-Z]{2})|GIR\s?0AA)$	en,nrf	3042362		
 GH	GHA	288	GH	Ghana	Accra	239460	29767108	AF	.gh	GHS	Cedi	233			en-GH,ak,ee,tw	2300660	CI,TG,BF	
@@ -142,7 +142,7 @@ GT	GTM	320	GT	Guatemala	Guatemala City	108890	17247807	NA	.gt	GTQ	Quetzal	502	##
 GU	GUM	316	GQ	Guam	Hagatna	549	165768	OC	.gu	USD	Dollar	+1-671	969##	^(969\d{2})$	en-GU,ch-GU	4043988		
 GW	GNB	624	PU	Guinea-Bissau	Bissau	36120	1874309	AF	.gw	XOF	Franc	245	####	^(\d{4})$	pt-GW,pov	2372248	SN,GN	
 GY	GUY	328	GY	Guyana	Georgetown	214970	779004	SA	.gy	GYD	Dollar	592			en-GY	3378535	SR,BR,VE	
-HK	HKG	344	HK	Hong Kong	Hong Kong	1092	7491609	AS	.hk	HKD	Dollar	852	######	^(\d{6})$	zh-HK,yue,zh,en	1819730		
+HK	HKG	344	HK	Hong Kong	Hong Kong	1092	7396076	AS	.hk	HKD	Dollar	852	######	^(\d{6})$	zh-HK,yue,zh,en	1819730		
 HM	HMD	334	HM	Heard Island and McDonald Islands		412	0	AN	.hm	AUD	Dollar	 	####	^(\d{4})$		1547314		
 HN	HND	340	HO	Honduras	Tegucigalpa	112090	9587522	NA	.hn	HNL	Lempira	504	#####	^(\d{6})$	es-HN,cab,miq	3608932	GT,NI,SV	
 HR	HRV	191	HR	Croatia	Zagreb	56542	3871833	EU	.hr	EUR	Euro	385	#####	^(?:HR)*(\d{5})$	hr-HR,sr	3202326	HU,SI,BA,ME,RS	
@@ -252,14 +252,14 @@ SH	SHN	654	SH	Saint Helena	Jamestown	410	7460	AF	.sh	SHP	Pound	290	STHL 1ZZ	^(ST
 SI	SVN	705	SI	Slovenia	Ljubljana	20273	2067372	EU	.si	EUR	Euro	386	####	^(?:SI)*(\d{4})$	sl,sh	3190538	HU,IT,HR,AT	
 SJ	SJM	744	SV	Svalbard and Jan Mayen	Longyearbyen	62049	2550	EU	.sj	NOK	Krone	47	####	^(\d{4})$	no,ru	607072		
 SK	SVK	703	LO	Slovakia	Bratislava	48845	5447011	EU	.sk	EUR	Euro	421	### ##	^\d{3}\s?\d{2}$	sk,hu	3057568	PL,HU,CZ,UA,AT	
-SL	SLE	694	SL	Sierra Leone	Freetown	71740	7650154	AF	.sl	SLL	Leone	232			en-SL,men,tem	2403846	LR,GN	
+SL	SLE	694	SL	Sierra Leone	Freetown	71740	7650154	AF	.sl	SLE	Leone	232			en-SL,men,tem	2403846	LR,GN	
 SM	SMR	674	SM	San Marino	San Marino	61.2	33785	EU	.sm	EUR	Euro	378	4789#	^(4789\d)$	it-SM	3168068	IT	
 SN	SEN	686	SG	Senegal	Dakar	196190	15854360	AF	.sn	XOF	Franc	221	#####	^(\d{5})$	fr-SN,wo,fuc,mnk	2245662	GN,MR,GW,GM,ML	
 SO	SOM	706	SO	Somalia	Mogadishu	637657	15008154	AF	.so	SOS	Shilling	252	@@  #####	^([A-Z]{2}\d{5})$	so-SO,ar-SO,it,en-SO	51537	ET,KE,DJ	
 SR	SUR	740	NS	Suriname	Paramaribo	163270	575991	SA	.sr	SRD	Dollar	597			nl-SR,en,srn,hns,jv	3382998	GY,BR,GF	
 ST	STP	678	TP	Sao Tome and Principe	Sao Tome	1001	197700	AF	.st	STN	Dobra	239			pt-ST	2410758		
 SV	SLV	222	ES	El Salvador	San Salvador	21040	6420744	NA	.sv	USD	Dollar	503	CP ####	^(?:CP)*(\d{4})$	es-SV	3585968	GT,HN	
-SX	SXM	534	NN	Sint Maarten	Philipsburg	21	40654	NA	.sx	ANG	Guilder	599			nl,en	7609695	MF	
+SX	SXM	534	NN	Sint Maarten	Philipsburg	21	40654	NA	.sx	XCG	Guilder	599			nl,en	7609695	MF	
 SY	SYR	760	SY	Syria	Damascus	185180	16906283	AS	.sy	SYP	Pound	963			ar-SY,ku,hy,arc,fr,en	163843	IQ,JO,IL,TR,LB	
 SZ	SWZ	748	WZ	Eswatini	Mbabane	17363	1136191	AF	.sz	SZL	Lilangeni	268	@###	^([A-Z]\d{3})$	en-SZ,ss-SZ	934841	ZA,MZ	
 TC	TCA	796	TK	Turks and Caicos Islands	Cockburn Town	430	37665	NA	.tc	USD	Dollar	+1-649	TKCA 1ZZ	^(TKCA 1ZZ)$	en-TC	3576916		
@@ -297,6 +297,6 @@ YE	YEM	887	YM	Yemen	Sanaa	527970	28498687	AS	.ye	YER	Rial	967			ar-YE	69543	SA,O
 YT	MYT	175	MF	Mayotte	Mamoudzou	374	279471	AF	.yt	EUR	Euro	262	#####	^(\d{5})$	fr-YT	1024031		
 ZA	ZAF	710	SF	South Africa	Pretoria	1219912	57779622	AF	.za	ZAR	Rand	27	####	^(\d{4})$	zu,xh,af,nso,en-ZA,tn,st,ts,ss,ve,nr	953987	ZW,SZ,MZ,BW,NA,LS	
 ZM	ZMB	894	ZA	Zambia	Lusaka	752614	17351822	AF	.zm	ZMW	Kwacha	260	#####	^(\d{5})$	en-ZM,bem,loz,lun,lue,ny,toi	895949	ZW,TZ,MZ,CD,NA,MW,AO	
-ZW	ZWE	716	ZI	Zimbabwe	Harare	390580	14439018	AF	.zw	ZWL	Dollar	263			en-ZW,sn,nr,nd	878675	ZA,MZ,BW,ZM	
+ZW	ZWE	716	ZI	Zimbabwe	Harare	390580	16868409	AF	.zw	ZWG	Zimbabwe Gold	263			en-ZW,sn,nr,nd	878675	ZA,MZ,BW,ZM	
 CS	SCG	891	YI	Serbia and Montenegro	Belgrade	102350	10829175	EU	.cs	RSD	Dinar	381	#####	^(\d{5})$	cu,hu,sq,sr	8505033	AL,HU,MK,RO,HR,BA,BG	
 AN	ANT	530	NT	Netherlands Antilles	Willemstad	960	300000	NA	.an	ANG	Guilder	599			nl-AN,en,es	8505032	GP	
