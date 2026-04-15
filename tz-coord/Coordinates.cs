@@ -12,18 +12,20 @@ public static class Coordinates
 
     public static void HandleCoordinates()
     {
-        var error = HandleCities();
+        var translations = LoadTranslations();
+
+        var error = HandleCities(translations);
         if (error != null)
         {
             Console.WriteLine(error.Message);
         }
-        
+
         error = HandleRegions();
         if (error != null)
         {
             Console.WriteLine(error.Message);
         }
-        
+
         error = HandleCountries();
         if (error != null)
         {
@@ -33,16 +35,61 @@ public static class Coordinates
         EnrichCityNames();
     }
 
-    private static Exception? HandleCities()
+    /// <summary>
+    /// Reads alternateNamesV2.txt and returns a dictionary mapping geoname ID to the set of
+    /// distinct translated names in nl, de, fr and en that differ from nothing yet (caller filters
+    /// against the canonical name).
+    /// </summary>
+    private static Dictionary<string, HashSet<string>> LoadTranslations()
     {
+        var result = new Dictionary<string, HashSet<string>>();
+        var supportedLangs = new HashSet<string> { "nl", "de", "fr", "en" };
+
+        try
+        {
+            var lines = File.ReadAllLines(FilePaths.AltNamesInputFile);
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                var fields = line.Split('\t');
+                if (fields.Length < 4) continue;
+
+                var lang = fields[2];
+                if (!supportedLangs.Contains(lang)) continue;
+
+                var geoId = fields[1];
+                var name  = fields[3];
+                if (string.IsNullOrWhiteSpace(name)) continue;
+
+                if (!result.TryGetValue(geoId, out var names))
+                {
+                    names = new HashSet<string>(StringComparer.Ordinal);
+                    result[geoId] = names;
+                }
+                names.Add(name);
+            }
+            Console.WriteLine("Loading translations completed successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading translations: {ex.Message}");
+        }
+
+        return result;
+    }
+
+    private static Exception? HandleCities(Dictionary<string, HashSet<string>> translations)
+    {
+        const int IDX_ID      = 0;
         const int IDX_COUNTRY = 8;
-        const int IDX_NAME    = 2;
+        const int IDX_NAME    = 1; // allCountries uses col 1 (UTF-8 name)
         const int IDX_LAT     = 4;
         const int IDX_LON     = 5;
+        const int IDX_FEATURE = 6; // feature class; only 'P' (populated places) is used
         const int IDX_ADMIN1  = 10;
         const int IDX_ELEV    = 15; // elevation (may be empty)
         const int IDX_TZ      = 17;
-        
+
         try
         {
             var lines = File.ReadAllLines(FilePaths.CitiesInputFile);
@@ -51,29 +98,44 @@ public static class Coordinates
             foreach (var line in lines)
             {
                 if (string.IsNullOrWhiteSpace(line)) continue;
-                
+
                 var fields = line.Split('\t');
-                
+
                 if (fields.Length < 18)
                 {
                     Console.WriteLine($"Warning: line has {fields.Length} fields, skipping");
                     continue;
                 }
-                
+
+                if (fields[IDX_FEATURE] != "P") continue;
+
+                var geoId   = fields[IDX_ID];
+                var canName = fields[IDX_NAME];
+
                 // Select required fields (0-based index)
                 var selectedFields = new[]
                 {
                     fields[IDX_COUNTRY],// country
-                    fields[IDX_NAME],   // name location
+                    canName,            // name location
                     fields[IDX_LAT],    // latitude
                     fields[IDX_LON],    // longitude
                     fields[IDX_ADMIN1], // admin1 ; province or state
                     fields[IDX_ELEV],   // elevation in meters
                     fields[IDX_TZ],     // indication for timezone
                 };
-                
-                var outputLine = string.Join(";", selectedFields);
-                outputLines.Add(outputLine);
+
+                outputLines.Add(string.Join(";", selectedFields));
+
+                // Add extra rows for translated names that differ from the canonical name
+                if (translations.TryGetValue(geoId, out var translatedNames))
+                {
+                    foreach (var translatedName in translatedNames)
+                    {
+                        if (translatedName == canName) continue;
+                        selectedFields[1] = translatedName;
+                        outputLines.Add(string.Join(";", selectedFields));
+                    }
+                }
             }
 
             // Ensure directory exists

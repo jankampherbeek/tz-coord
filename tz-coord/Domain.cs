@@ -13,19 +13,20 @@ namespace tz_coord;
 /// </summary>
 public static class FilePaths
 {
-    public const string CountriesFile = @"E:\tz-coord\tz-coord\data\countries.csv";
-    public const string CitiesFile = @"E:\tz-coord\tz-coord\data\citiesnoreg.csv";
-    public const string RegionsFile = @"E:\tz-coord\tz-coord\data\regions.csv";
-    public const string CitiesRegionsOutputFile = @"E:\tz-coord\tz-coord\results\cities.csv";
-    public const string CitiesOutputFile = @"E:\tz-coord\tz-coord\results\cities.csv";
-    public const string RegionsOutputFile = @"E:\tz-coord\tz-coord\results\regions.csv";
-    public const string CitiesInputFile = @"E:\tz-coord\tz-coord\coord\cities500.txt";
-    public const string RegionsInputFile = @"E:\tz-coord\tz-coord\coord\admin1CodesAscII.txt";
-    public const string CountryInputFile = @"E:\tz-coord\tz-coord\coord\countryinfo.txt";
-    public const string CountryOutputFile = @"E:\tz-coord\tz-coord\results\countries.csv";
-    private const string ContinentPrefix = @"E:\tz-coord\tz-coord\continents\";
-    
-    private const string Prefix = @"E:\tz-coord\tz-coord\";
+    public const string CountriesFile = @"E:\tz-coord-v2\tz-coord\data\countries.csv";
+    public const string CitiesFile = @"E:\tz-coord-v2\tz-coord\data\citiesnoreg.csv";
+    public const string RegionsFile = @"E:\tz-coord-v2\tz-coord\data\regions.csv";
+    public const string CitiesRegionsOutputFile = @"E:\tz-coord-v2\tz-coord\results\cities.csv";
+    public const string CitiesOutputFile = @"E:\tz-coord-v2\tz-coord\results\cities.csv";
+    public const string RegionsOutputFile = @"E:\tz-coord-v2\tz-coord\results\regions.csv";
+    public const string CitiesInputFile = @"E:\tz-coord-v2\tz-coord\coord\allCountries.txt";
+    public const string AltNamesInputFile = @"E:\tz-coord-v2\tz-coord\coord\alternateNamesV2.txt";
+    public const string RegionsInputFile = @"E:\tz-coord-v2\tz-coord\coord\admin1CodesAscII.txt";
+    public const string CountryInputFile = @"E:\tz-coord-v2\tz-coord\coord\countryinfo.txt";
+    public const string CountryOutputFile = @"E:\tz-coord-v2\tz-coord\results\countries.csv";
+    private const string ContinentPrefix = @"E:\tz-coord-v2\tz-coord\continents\";
+
+    private const string Prefix = @"E:\tz-coord-v2\tz-coord\";
     private const string Sep = "\\";
     public const string AfricaInputFile = FilePaths.ContinentPrefix + "africa";
     public const string AntarcticaInputFile = FilePaths.ContinentPrefix + "antarctica";
