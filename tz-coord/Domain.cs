@@ -42,6 +42,7 @@ public static class FilePaths
     public const string TzDataFile = Prefix + Sep + "results" + Sep + "tzdata.csv";  // final results for timezones
     public const string DstDataFile = Prefix + Sep + "results" + Sep + "dstdata.csv"; // final results for dst
     public const string ResultsFolder = Prefix + Sep + "results";
+    public const string DatabaseFile  = Prefix + Sep + "results" + Sep + "enigma.db";
 
     public const string TzOutputFile = Prefix + Sep + "tz" + Sep + "tz.txt";
 }

@@ -14,6 +14,7 @@ class Program
         CleanExistingFiles();
         Coordinates.HandleCoordinates();
         TimeZones.HandleTimeZones();
+        Database.BuildDatabase();
     }
 
 

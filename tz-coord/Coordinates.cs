@@ -86,9 +86,20 @@ public static class Coordinates
         const int IDX_LAT     = 4;
         const int IDX_LON     = 5;
         const int IDX_FEATURE = 6; // feature class; only 'P' (populated places) is used
+        const int IDX_FCODE   = 7; // feature code; some sub-types are excluded
         const int IDX_ADMIN1  = 10;
         const int IDX_ELEV    = 15; // elevation (may be empty)
         const int IDX_TZ      = 17;
+
+        // Sub-types excluded: not useful as birth locations
+        // PPLX  section of populated place (suburb/district)
+        // PPLQ  abandoned populated place
+        // PPLW  destroyed populated place
+        // PPLH  historical populated place
+        // PPLCH historical capital
+        // PPLL  populated locality
+        // PPLF  farm village
+        var excludedCodes = new HashSet<string> { "PPLX", "PPLQ", "PPLW", "PPLH", "PPLCH", "PPLL", "PPLF" };
 
         try
         {
@@ -108,6 +119,7 @@ public static class Coordinates
                 }
 
                 if (fields[IDX_FEATURE] != "P") continue;
+                if (excludedCodes.Contains(fields[IDX_FCODE])) continue;
 
                 var geoId   = fields[IDX_ID];
                 var canName = fields[IDX_NAME];
