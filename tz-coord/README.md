@@ -45,149 +45,166 @@ The output files are:
 ## Database
 The database is a SQLite database. It uses the following tables:
 ---
-Timezone
 
-Lookup table for IANA timezone names, referenced by City to avoid repeating the string per row.
-
-┌────────┬─────────┬──────────────────┐
-│ Column │  Type   │   Constraints    │
-├────────┼─────────┼──────────────────┤
-│ id     │ INTEGER │ PRIMARY KEY      │
-├────────┼─────────┼──────────────────┤
-│ name   │ TEXT    │ NOT NULL, UNIQUE │
-└────────┴─────────┴──────────────────┘
-
-  ---
 Country
 
-┌──────────────┬──────┬──────────────────────────────────────────┐
-│    Column    │ Type │               Constraints                │
-├──────────────┼──────┼──────────────────────────────────────────┤
-│ country_code │ TEXT │ PRIMARY KEY — ISO 2-letter code, e.g. NL │
-├──────────────┼──────┼──────────────────────────────────────────┤
-│ name         │ TEXT │ NOT NULL                                 │
-├──────────────┼──────┼──────────────────────────────────────────┤
-│ continent    │ TEXT │ NOT NULL — 2-letter code, e.g. EU        │
-└──────────────┴──────┴──────────────────────────────────────────┘
+┌──────────────┬──────┬─────────────┐
+│    Column    │ Type │ Constraints │
+├──────────────┼──────┼─────────────┤
+│ country_code │ TEXT │ PRIMARY KEY │
+├──────────────┼──────┼─────────────┤
+│ name         │ TEXT │ NOT NULL    │
+├──────────────┼──────┼─────────────┤
+│ continent    │ TEXT │ NOT NULL    │
+└──────────────┴──────┴─────────────┘
+
+One row per country. Holds the canonical (English) name and continent code. Used as the anchor for City foreign keys.
+
+  ---
+CountryName
+
+┌──────────────┬─────────┬───────────────────────────┐
+│    Column    │  Type   │        Constraints        │
+├──────────────┼─────────┼───────────────────────────┤
+│ id           │ INTEGER │ PRIMARY KEY AUTOINCREMENT │
+├──────────────┼─────────┼───────────────────────────┤
+│ country_code │ TEXT    │ NOT NULL, FK → Country    │
+├──────────────┼─────────┼───────────────────────────┤
+│ name         │ TEXT    │ NOT NULL                  │
+└──────────────┴─────────┴───────────────────────────┘
+
+All name variants per country: canonical English name plus translations in Dutch, German, French, and English. Use
+this table when searching by name.
+Indexes: country_code, name COLLATE NOCASE.
 
   ---
 Region
 
-Administrative regions (states, provinces). Sourced from admin1CodesASCII.txt.
+┌─────────────┬──────┬─────────────┐
+│   Column    │ Type │ Constraints │
+├─────────────┼──────┼─────────────┤
+│ region_code │ TEXT │ PRIMARY KEY │
+├─────────────┼──────┼─────────────┤
+│ name        │ TEXT │ NOT NULL    │
+└─────────────┴──────┴─────────────┘
 
-┌─────────────┬──────┬─────────────────────────────────────┐
-│   Column    │ Type │             Constraints             │
-├─────────────┼──────┼─────────────────────────────────────┤
-│ region_code │ TEXT │ PRIMARY KEY — composite, e.g. NL.07 │
-├─────────────┼──────┼─────────────────────────────────────┤
-│ name        │ TEXT │ NOT NULL                            │
-└─────────────┴──────┴─────────────────────────────────────┘
+One row per administrative region (province/state). The code format is CC.XX (e.g. NL.07).
+
+  ---
+Timezone
+
+┌────────┬─────────┬─────────────────┐
+│ Column │  Type   │   Constraints   │
+├────────┼─────────┼─────────────────┤
+│ id     │ INTEGER │ PRIMARY KEY     │
+├────────┼─────────┼─────────────────┤
+│ name   │ TEXT    │ NOT NULL UNIQUE │
+└────────┴─────────┴─────────────────┘
+
+Distinct IANA timezone identifiers derived from the cities data (e.g. Europe/Amsterdam).
 
   ---
 City
 
-The main table. Contains one row per city name per language — the canonical name plus any distinct Dutch, German,
-French and English translations from GeoNames alternate names.
+┌──────────────┬─────────┬───────────────────────────┐
+│    Column    │  Type   │        Constraints        │
+├──────────────┼─────────┼───────────────────────────┤
+│ id           │ INTEGER │ PRIMARY KEY AUTOINCREMENT │
+├──────────────┼─────────┼───────────────────────────┤
+│ country_code │ TEXT    │ NOT NULL, FK → Country    │
+├──────────────┼─────────┼───────────────────────────┤
+│ name         │ TEXT    │ NOT NULL                  │
+├──────────────┼─────────┼───────────────────────────┤
+│ latitude     │ REAL    │ NOT NULL                  │
+├──────────────┼─────────┼───────────────────────────┤
+│ longitude    │ REAL    │ NOT NULL                  │
+├──────────────┼─────────┼───────────────────────────┤
+│ region_code  │ TEXT    │ FK → Region (nullable)    │
+├──────────────┼─────────┼───────────────────────────┤
+│ elevation    │ INTEGER │ nullable                  │
+├──────────────┼─────────┼───────────────────────────┤
+│ timezone_id  │ INTEGER │ NOT NULL, FK → Timezone   │
+└──────────────┴─────────┴───────────────────────────┘
 
-┌──────────────┬─────────┬────────────────────────────────────────────────────┐
-│    Column    │  Type   │                    Constraints                     │
-├──────────────┼─────────┼────────────────────────────────────────────────────┤
-│ id           │ INTEGER │ PRIMARY KEY AUTOINCREMENT                          │
-├──────────────┼─────────┼────────────────────────────────────────────────────┤
-│ country_code │ TEXT    │ NOT NULL, FK → Country                             │
-├──────────────┼─────────┼────────────────────────────────────────────────────┤
-│ name         │ TEXT    │ NOT NULL                                           │
-├──────────────┼─────────┼────────────────────────────────────────────────────┤
-│ latitude     │ REAL    │ NOT NULL                                           │
-├──────────────┼─────────┼────────────────────────────────────────────────────┤
-│ longitude    │ REAL    │ NOT NULL                                           │
-├──────────────┼─────────┼────────────────────────────────────────────────────┤
-│ region_code  │ TEXT    │ nullable — not enforced by FK as GeoNames has gaps │
-├──────────────┼─────────┼────────────────────────────────────────────────────┤
-│ elevation    │ INTEGER │ nullable, metres                                   │
-├──────────────┼─────────┼────────────────────────────────────────────────────┤
-│ timezone_id  │ INTEGER │ NOT NULL, FK → Timezone                            │
-└──────────────┴─────────┴────────────────────────────────────────────────────┘
-
-Indexes: country_code, timezone_id, name COLLATE NOCASE
+Multiple rows per city when translated names exist — each translation is a separate row with the same coordinates,
+region, elevation, and timezone.
+Indexes: country_code, timezone_id, name COLLATE NOCASE.
 
   ---
 TzData
 
-Historical timezone interval records parsed from the IANA timezone database Zone entries. Multiple rows per zone name,
-each representing one historical interval.
+┌─────────────┬─────────┬───────────────────────────┐
+│   Column    │  Type   │        Constraints        │
+├─────────────┼─────────┼───────────────────────────┤
+│ id          │ INTEGER │ PRIMARY KEY AUTOINCREMENT │
+├─────────────┼─────────┼───────────────────────────┤
+│ zone_name   │ TEXT    │ NOT NULL                  │
+├─────────────┼─────────┼───────────────────────────┤
+│ offset_h    │ INTEGER │ NOT NULL                  │
+├─────────────┼─────────┼───────────────────────────┤
+│ offset_m    │ INTEGER │ NOT NULL                  │
+├─────────────┼─────────┼───────────────────────────┤
+│ offset_s    │ INTEGER │ NOT NULL                  │
+├─────────────┼─────────┼───────────────────────────┤
+│ rule        │ TEXT    │ NOT NULL                  │
+├─────────────┼─────────┼───────────────────────────┤
+│ format      │ TEXT    │ NOT NULL                  │
+├─────────────┼─────────┼───────────────────────────┤
+│ until_year  │ INTEGER │ NOT NULL                  │
+├─────────────┼─────────┼───────────────────────────┤
+│ until_month │ INTEGER │ NOT NULL                  │
+├─────────────┼─────────┼───────────────────────────┤
+│ until_day   │ TEXT    │ NOT NULL                  │
+├─────────────┼─────────┼───────────────────────────┤
+│ at_h        │ INTEGER │ NOT NULL, DEFAULT 0       │
+├─────────────┼─────────┼───────────────────────────┤
+│ at_m        │ INTEGER │ NOT NULL, DEFAULT 0       │
+├─────────────┼─────────┼───────────────────────────┤
+│ at_s        │ INTEGER │ NOT NULL, DEFAULT 0       │
+└─────────────┴─────────┴───────────────────────────┘
 
-┌─────────────┬─────────┬─────────────────────────────────────────────────────┐
-│   Column    │  Type   │                     Constraints                     │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ id          │ INTEGER │ PRIMARY KEY AUTOINCREMENT                           │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ zone_name   │ TEXT    │ NOT NULL — IANA name, e.g. Europe/Amsterdam         │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ offset_h    │ INTEGER │ NOT NULL — UTC offset hours                         │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ offset_m    │ INTEGER │ NOT NULL — UTC offset minutes                       │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ offset_s    │ INTEGER │ NOT NULL — UTC offset seconds                       │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ rule        │ TEXT    │ NOT NULL — DST rule name or - for none              │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ format      │ TEXT    │ NOT NULL — abbreviation template, e.g. WE%sT        │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ until_year  │ INTEGER │ NOT NULL — 0 means this interval has no end         │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ until_month │ INTEGER │ NOT NULL                                            │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ until_day   │ TEXT    │ NOT NULL — integer or expression e.g. last6, 6>=1   │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ at_h        │ INTEGER │ NOT NULL DEFAULT 0 — time-of-day for the transition │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ at_m        │ INTEGER │ NOT NULL DEFAULT 0                                  │
-├─────────────┼─────────┼─────────────────────────────────────────────────────┤
-│ at_s        │ INTEGER │ NOT NULL DEFAULT 0                                  │
-└─────────────┴─────────┴─────────────────────────────────────────────────────┘
-
-Index: zone_name
+Historical UTC offset records from the IANA timezone database. Multiple rows per zone_name, ordered implicitly by the
+until_* fields. Index on zone_name.
 
   ---
 DstData
 
-DST rules parsed from the IANA timezone database Rule entries. Multiple rows per rule name, each covering a year
-range.
+┌───────────┬─────────┬───────────────────────────┐
+│  Column   │  Type   │        Constraints        │
+├───────────┼─────────┼───────────────────────────┤
+│ id        │ INTEGER │ PRIMARY KEY AUTOINCREMENT │
+├───────────┼─────────┼───────────────────────────┤
+│ rule_name │ TEXT    │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ from_year │ INTEGER │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ to_year   │ TEXT    │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ month     │ INTEGER │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ day       │ TEXT    │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ at_h      │ INTEGER │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ at_m      │ INTEGER │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ at_s      │ INTEGER │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ use_ut    │ TEXT    │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ save_h    │ INTEGER │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ save_m    │ INTEGER │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ save_s    │ INTEGER │ NOT NULL                  │
+├───────────┼─────────┼───────────────────────────┤
+│ letter    │ TEXT    │ NOT NULL                  │
+└───────────┴─────────┴───────────────────────────┘
 
-┌───────────┬─────────┬─────────────────────────────────────────────────────────┐
-│  Column   │  Type   │                       Constraints                       │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ id        │ INTEGER │ PRIMARY KEY AUTOINCREMENT                               │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ rule_name │ TEXT    │ NOT NULL — e.g. Algeria                                 │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ from_year │ INTEGER │ NOT NULL                                                │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ to_year   │ TEXT    │ NOT NULL — year number or only                          │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ month     │ INTEGER │ NOT NULL                                                │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ day       │ TEXT    │ NOT NULL — integer or expression e.g. last6, 6>=1       │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ at_h      │ INTEGER │ NOT NULL                                                │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ at_m      │ INTEGER │ NOT NULL                                                │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ at_s      │ INTEGER │ NOT NULL                                                │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ use_ut    │ TEXT    │ NOT NULL — u if time is UTC, n if local                 │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ save_h    │ INTEGER │ NOT NULL — DST offset to add                            │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ save_m    │ INTEGER │ NOT NULL                                                │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ save_s    │ INTEGER │ NOT NULL                                                │
-├───────────┼─────────┼─────────────────────────────────────────────────────────┤
-│ letter    │ TEXT    │ NOT NULL — substitution letter for format, e.g. S, D, - │
-└───────────┴─────────┴─────────────────────────────────────────────────────────┘
+DST (daylight saving time) rules from the IANA database. to_year is TEXT because it can hold the value "only" or "max"
+in addition to a year number. day is TEXT to accommodate expressions like lastSun (stored as last6) or Sun>=1 (stored
+as 6>=1). Index on rule_name.
 
-Index: rule_name
 
 
 ## Prerequisites

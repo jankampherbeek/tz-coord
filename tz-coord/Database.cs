@@ -53,6 +53,15 @@ public static class Database
                 continent    TEXT NOT NULL
             );
 
+            CREATE TABLE CountryName (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                country_code TEXT    NOT NULL REFERENCES Country(country_code),
+                name         TEXT    NOT NULL
+            );
+
+            CREATE INDEX idx_countryname_code ON CountryName(country_code);
+            CREATE INDEX idx_countryname_name ON CountryName(name COLLATE NOCASE);
+
             CREATE TABLE Region (
                 region_code TEXT PRIMARY KEY,
                 name        TEXT NOT NULL
@@ -119,11 +128,19 @@ public static class Database
     private static void LoadCountries(SqliteConnection conn)
     {
         var lines = File.ReadAllLines(FilePaths.CountryOutputFile);
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = "INSERT INTO Country(country_code, name, continent) VALUES($code, $name, $continent)";
-        var pCode      = cmd.Parameters.Add("$code",      SqliteType.Text);
-        var pName      = cmd.Parameters.Add("$name",      SqliteType.Text);
-        var pContinent = cmd.Parameters.Add("$continent", SqliteType.Text);
+
+        // INSERT into Country — one row per country code (first occurrence = canonical name)
+        using var cmdCountry = conn.CreateCommand();
+        cmdCountry.CommandText = "INSERT OR IGNORE INTO Country(country_code, name, continent) VALUES($code, $name, $continent)";
+        var pCode      = cmdCountry.Parameters.Add("$code",      SqliteType.Text);
+        var pName      = cmdCountry.Parameters.Add("$name",      SqliteType.Text);
+        var pContinent = cmdCountry.Parameters.Add("$continent", SqliteType.Text);
+
+        // INSERT into CountryName — every row (canonical + translated)
+        using var cmdName = conn.CreateCommand();
+        cmdName.CommandText = "INSERT INTO CountryName(country_code, name) VALUES($code, $name)";
+        var pNCode = cmdName.Parameters.Add("$code", SqliteType.Text);
+        var pNName = cmdName.Parameters.Add("$name", SqliteType.Text);
 
         foreach (var line in lines)
         {
@@ -132,7 +149,11 @@ public static class Database
             pCode.Value      = f[0];
             pName.Value      = f[1];
             pContinent.Value = f[2];
-            cmd.ExecuteNonQuery();
+            cmdCountry.ExecuteNonQuery(); // silently skips duplicates
+
+            pNCode.Value = f[0];
+            pNName.Value = f[1];
+            cmdName.ExecuteNonQuery();
         }
         Console.WriteLine("Loaded countries into database");
     }

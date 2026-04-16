@@ -26,7 +26,7 @@ public static class Coordinates
             Console.WriteLine(error.Message);
         }
 
-        error = HandleCountries();
+        error = HandleCountries(translations);
         if (error != null)
         {
             Console.WriteLine(error.Message);
@@ -213,8 +213,13 @@ public static class Coordinates
         }
     }
 
-    private static Exception? HandleCountries()
+    private static Exception? HandleCountries(Dictionary<string, HashSet<string>> translations)
     {
+        const int IDX_CODE      = 0;
+        const int IDX_NAME      = 4;
+        const int IDX_CONTINENT = 8;
+        const int IDX_GEOID     = 16;
+
         try
         {
             var lines = File.ReadAllLines(FilePaths.CountryInputFile);
@@ -226,23 +231,34 @@ public static class Coordinates
                 {
                     continue; // Skip comment lines
                 }
-                
+
                 var fields = line.Split('\t');
-                if (fields.Length < 9)
+                if (fields.Length < 17)
                 {
                     continue;
                 }
-                
-                // Select required fields (0-based index)
+
+                var canName = fields[IDX_NAME];
                 var selectedFields = new[]
                 {
-                    fields[0], // country code
-                    fields[4], // country name
-                    fields[8], // continent
+                    fields[IDX_CODE],      // country code
+                    canName,               // country name
+                    fields[IDX_CONTINENT], // continent
                 };
 
-                var outputLine = string.Join(";", selectedFields);
-                outputLines.Add(outputLine);
+                outputLines.Add(string.Join(";", selectedFields));
+
+                // Add extra rows for translated names that differ from the canonical name
+                var geoId = fields[IDX_GEOID].Trim();
+                if (!string.IsNullOrEmpty(geoId) && translations.TryGetValue(geoId, out var translatedNames))
+                {
+                    foreach (var translatedName in translatedNames)
+                    {
+                        if (translatedName == canName) continue;
+                        selectedFields[1] = translatedName;
+                        outputLines.Add(string.Join(";", selectedFields));
+                    }
+                }
             }
 
             // Ensure directory exists
