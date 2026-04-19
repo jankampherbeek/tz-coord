@@ -28,7 +28,7 @@ public static class Database
             LoadRegions(conn);
             var timezoneIds = LoadTimezones(conn);
             LoadCities(conn, timezoneIds);
-            LoadTzData(conn);
+            LoadTzData(conn, timezoneIds);
             LoadDstData(conn);
             tx.Commit();
 
@@ -85,7 +85,7 @@ public static class Database
 
             CREATE TABLE TzData (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                zone_name   TEXT    NOT NULL,
+                id_zone     INTEGER NOT NULL REFERENCES Timezone(id),
                 offset_h    INTEGER NOT NULL,
                 offset_m    INTEGER NOT NULL,
                 offset_s    INTEGER NOT NULL,
@@ -119,7 +119,7 @@ public static class Database
             CREATE INDEX idx_city_country   ON City(country_code);
             CREATE INDEX idx_city_timezone  ON City(timezone_id);
             CREATE INDEX idx_city_name      ON City(name COLLATE NOCASE);
-            CREATE INDEX idx_tzdata_zone   ON TzData(zone_name);
+            CREATE INDEX idx_tzdata_zone   ON TzData(id_zone);
             CREATE INDEX idx_dstdata_rule  ON DstData(rule_name);
             """;
         cmd.ExecuteNonQuery();
@@ -179,12 +179,20 @@ public static class Database
 
     private static Dictionary<string, int> LoadTimezones(SqliteConnection conn)
     {
-        // Collect all distinct timezone names from the cities file first
-        var names = File.ReadAllLines(FilePaths.CitiesRegionsOutputFile)
+        // Collect distinct timezone names from cities (field 6) and tzdata Zone headers (field 1)
+        var fromCities = File.ReadAllLines(FilePaths.CitiesRegionsOutputFile)
             .Where(l => !string.IsNullOrWhiteSpace(l))
             .Select(l => l.Split(';'))
             .Where(f => f.Length >= 7)
-            .Select(f => f[6])
+            .Select(f => f[6]);
+
+        var fromTzData = File.ReadAllLines(FilePaths.TzDataFile)
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .Select(l => l.Split(';'))
+            .Where(f => f.Length >= 2 && f[0] == "Zone")
+            .Select(f => f[1]);
+
+        var names = fromCities.Concat(fromTzData)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(n => n)
             .ToList();
@@ -246,16 +254,16 @@ public static class Database
         Console.WriteLine("Loaded cities into database");
     }
 
-    private static void LoadTzData(SqliteConnection conn)
+    private static void LoadTzData(SqliteConnection conn, Dictionary<string, int> timezoneIds)
     {
         var lines = File.ReadAllLines(FilePaths.TzDataFile);
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO TzData(zone_name, offset_h, offset_m, offset_s, rule, format,
+            INSERT INTO TzData(id_zone, offset_h, offset_m, offset_s, rule, format,
                                until_year, until_month, until_day, at_h, at_m, at_s)
             VALUES($zone, $oh, $om, $os, $rule, $fmt, $uy, $um, $ud, $ah, $am, $as)
             """;
-        var pZone = cmd.Parameters.Add("$zone", SqliteType.Text);
+        var pZone = cmd.Parameters.Add("$zone", SqliteType.Integer);
         var pOh   = cmd.Parameters.Add("$oh",   SqliteType.Integer);
         var pOm   = cmd.Parameters.Add("$om",   SqliteType.Integer);
         var pOs   = cmd.Parameters.Add("$os",   SqliteType.Integer);
@@ -269,7 +277,7 @@ public static class Database
         var pAs   = cmd.Parameters.Add("$as",   SqliteType.Integer);
 
         // Zone header lines carry the zone name; continuation lines inherit it.
-        var currentZone = "";
+        var currentZoneId = 0;
 
         foreach (var line in lines)
         {
@@ -277,25 +285,25 @@ public static class Database
 
             if (f[0] == "Zone")
             {
-                // format: Zone;zone_name;oh;om;os;rule;fmt;until_year;until_month;until_day
-                if (f.Length < 10) continue;
-                currentZone = f[1];
-                pZone.Value = currentZone;
+                // format: Zone;zone_name;oh;om;os;fmt;until_year;until_month;until_day  (9 fields, rule omitted)
+                if (f.Length < 9) continue;
+                currentZoneId = timezoneIds.TryGetValue(f[1], out var zid) ? zid : 0;
+                pZone.Value = currentZoneId;
                 pOh.Value   = IntOrZero(f[2]);
                 pOm.Value   = IntOrZero(f[3]);
                 pOs.Value   = IntOrZero(f[4]);
-                pRule.Value = f[5];
-                pFmt.Value  = f[6];
-                pUy.Value   = IntOrZero(f[7]);
-                pUm.Value   = IntOrZero(f[8]);
-                pUd.Value   = f[9];
+                pRule.Value = "";
+                pFmt.Value  = f[5];
+                pUy.Value   = IntOrZero(f[6]);
+                pUm.Value   = IntOrZero(f[7]);
+                pUd.Value   = f[8];
                 pAh.Value   = 0; pAm.Value = 0; pAs.Value = 0;
             }
             else
             {
                 // format: oh;om;os;rule;fmt;until_year;until_month;until_day;at_h;at_m;at_s
                 if (f.Length < 11) continue;
-                pZone.Value = currentZone;
+                pZone.Value = currentZoneId;
                 pOh.Value   = IntOrZero(f[0]);
                 pOm.Value   = IntOrZero(f[1]);
                 pOs.Value   = IntOrZero(f[2]);
